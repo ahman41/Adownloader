@@ -5,74 +5,53 @@ from qbittorrent import Client
 import time
 qb = Client('http://127.0.0.1:8080/')
 qb.login('admin', 'adminadmin')
-num = 0
+allepisodes =0
+epiarray = []
+dict = {}
+add =0
 n = 0
-nd=-1
+sourcecode="start"
 name= input("Please enter show name: ")
 q = input("Please choose the quality: \n 1- 1080 \n 2- 720 \n 3- 480 \nYour choice: ")
-howmuch= input("Please enter the amount of episodes you want to download: ")
+howmuch= int(input("Please enter the amount of episodes you want to download: "))
 start = input("Please enter the episode number to start at: ")
-start = int(start)
+if int(start) < 10:
+    start = f"0{start}"
 if q=='1':
     q="1080p"
 elif q=='2':
     q="720p"
 elif q=='3':
     q="480p"
-n=0
 #---FindId-----
 x = findid(name)
-download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(nd))
-downloads = str(download.content)
+while sourcecode!= "b'DONE'":
+    allepisodes=0
+    download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(n))
+    sourcecode= str(download.content)
+    soup = BeautifulSoup(download.content, 'lxml')
+    epinumber = soup.find_all("div", class_="rls-info-container")
+    quality = soup.find_all("div", class_="link-" +q)
+    n = n+1
+    #--- Loop and store in array
+    while allepisodes<len(epinumber):
+        #epiarray.append(epinumber[allepisodes].get("id"))
+        dwlink = quality[allepisodes].find('a').get('href')
+        dict.update({epinumber[allepisodes].get("id"): dwlink})
+        allepisodes = allepisodes+1
+
+while howmuch > 0:
+    try:
+        download = dict[str(start)]
+        print(f"Downloading episode number {start}")
+        start = int(start)+1
+        if int(start) < 10:
+            start = f"0{start}"
+        howmuch = howmuch-1
+        qb.download_from_link(download)
+    except:
+        print(f"This anime consists only of {len(dict)} episodes")
+        exit()
+
 #---Get number of pages---
-while downloads != "b'DONE'":
-    nd = nd+1
-    download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(nd))
-    downloads = str(download.content)
-while nd >=0:
-    if int(start) != 0:
-        if int(start)<=2:
-            nd = (nd-(int(start)/12))
-        else: 
-            nd = (nd-(int(start)/12))-1
-            if nd < 0:
-                nd = -nd
-        nd = int(nd)
-        print(nd)
-    download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(nd))
-    downloads = str(download.content)
-    if n == 0 and int(start) != 0:
-        inc = (int(start)%12)-2
-        if inc < 0:
-            inc = -inc
-        inc = int(inc)
-        print(inc)
-        start =0
-    elif n ==0 and int(start) == 0:
-        inc = 0
-    else :
-        inc = 1
-    nd = nd-1
-    soup = BeautifulSoup(download.content, "lxml")
-    episode= soup.find_all("div", class_="link-"+q)
-    number = soup.find_all("a",class_="rls-label")
-    while inc < len(episode):
-        if n == int(howmuch):
-            print("Done!")
-            exit()
-        torrent = episode[-inc].find("span",class_="hs-magnet-link")
-        number1= number[-inc].get_text().split("S")
-        n = n+1
-        torrent = torrent.find('a')
-        print(f"Magnet link for your {number1[0]} Episode: ")
-        #torrents = qb.download_from_link(torrent.get('href'))
-        inc = inc+1
-        if inc == len(episode) :
-            inc = 0
-            torrent = episode[0].find("span",class_="hs-magnet-link")
-            number1= number[0].get_text().split("S")
-            torrent = torrent.find('a')
-            #torrents = qb.download_from_link(torrent.get('href'))
-            print(f"Magnet link for your {number1[0]} Episode: ")
-            break
-    
+
