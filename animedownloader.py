@@ -56,5 +56,3 @@ while howmuch > 0:
     except:
         print(f"This anime consists only of {len(dict)} episodes")
         exit()
-
-
