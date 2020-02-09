@@ -1,7 +1,10 @@
 import requests, os, sys
+from tkinter import *
 from findid import findid
 from bs4 import BeautifulSoup
 from qbittorrent import Client
+window = Tk()
+window.title("Anime downloader")
 qb = Client('http://127.0.0.1:8080/')
 qb.login('admin', 'adminadmin')
 allepisodes =0
@@ -9,50 +12,75 @@ epiarray = []
 dict = {}
 add =0
 n = 0
-sourcecode="start"
-name= input("Please enter show name: ")
-q = input("Please choose the quality: \n 1- 1080 \n 2- 720 \n 3- 480 \nYour choice: ")
-if q != '3' and q != '2' and q != '1':
-    print("Please choose from 1,2 or 3")
-howmuch = input("Please enter the amount of episodes you want to download (enter 0 for all the anime): ")
-if howmuch != '0':
-    start = input("Please enter the episode number to start at: ")
-    if int(start) < 10:
+name = StringVar()
+aq= StringVar()
+astart = IntVar()
+ahowmuch = StringVar()
+def downloader():
+    allepisodes =0
+    epiarray = []
+    dict = {}
+    howmuch = int(ahowmuch.get())
+    q = aq.get()
+    start = astart.get()
+    add = 0
+    n = 0
+    sourcecode="start"
+    if start < 10:
         start = f"0{start}"
-if q=='1':
-    q="1080p"
-elif q=='2':
-    q="720p"
-elif q=='3':
-    q="480p"
-#---FindId-----
-x = findid(name)
-while sourcecode!= "b'DONE'":
-    allepisodes = 0
-    download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(n))
-    sourcecode= str(download.content)
-    soup = BeautifulSoup(download.content, 'lxml')
-    epinumber = soup.find_all("div", class_="rls-info-container")
-    quality = soup.find_all("div", class_="link-" +q)
-    n = n+1
-    #--- Loop and store in array
-    while allepisodes<len(epinumber):
-        dwlink = quality[allepisodes].find('a').get('href')
-        dict.update({epinumber[allepisodes].get("id"): dwlink})
-        allepisodes = allepisodes+1
-#download only that amount of episodes
-if howmuch == '0':
-    howmuch = len(dict)
-    start = list(dict.keys())[howmuch-1]
-while howmuch > 0:
-    try:
-        download = dict[str(start)]
-        print(f"Downloading episode number {start}")
-        start = int(start)+1
-        if int(start) < 10:
-            start = f"0{start}"
-        howmuch = howmuch-1
-        qb.download_from_link(download)
-    except:
-        print(f"This anime consists only of {len(dict)} episodes")
-        exit()
+    #---FindId-----
+    x = findid(name.get())
+    while sourcecode!= "b'DONE'":
+        allepisodes = 0
+        download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(n))
+        sourcecode= str(download.content)
+        soup = BeautifulSoup(download.content, 'lxml')
+        epinumber = soup.find_all("div", class_="rls-info-container")
+        quality = soup.find_all("div", class_="link-" +q)
+        n = n+1
+        #--- Loop and store in array
+        while allepisodes<len(epinumber):
+            dwlink = quality[allepisodes].find('a').get('href')
+            dict.update({epinumber[allepisodes].get("id"): dwlink})
+            allepisodes = allepisodes+1
+    #download only that amount of episodes
+    if howmuch == 0:
+        howmuch = len(dict)
+        start = list(dict.keys())[howmuch-1]
+    while howmuch > 0:
+        try:
+            download = dict[str(start)]
+            print(f"Downloading episode number {start}")
+            start = int(start)+1
+            if int(start) < 10:
+                start = f"0{start}"
+            howmuch = howmuch-1
+            qb.download_from_link(download)
+        except KeyError:
+            diclist = list(dict.values())
+            dicnumberlist = list(dict.keys())
+            download = diclist[-int(start)]
+            print(f"Downloading episode number {dicnumberlist[-int(start)]}")
+            start = int(start)+1
+            if int(start) < 10:
+                start = f"0{start}"
+            howmuch = howmuch-1
+            qb.download_from_link(download)
+        '''except :
+            print(sys.exc_info()[0])
+            print(f"This anime consists only of {len(dict)} episodes")
+            exit()'''
+    del q
+    del howmuch
+    del start
+t1 = Label(window,text = "Anime's name").pack()
+e1=Entry(window,textvariable=name).pack()
+t2 = Label(window,text = "Episode to start at").pack()
+e2=Entry(window,textvariable=astart).pack()
+t3 = Label(window,text = "No. of episodes to download").pack()
+e2=Entry(window,textvariable=ahowmuch).pack()
+R1 = Radiobutton(window, text="1080p", variable=aq, value="1080p").pack()
+R2 = Radiobutton(window, text="720p", variable=aq, value="720p").pack()
+R3 = Radiobutton(window, text="480p", variable=aq, value="480p").pack()
+b1 = Button(window, text = "Start download",command=downloader).pack()
+window.mainloop()
