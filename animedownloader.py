@@ -17,6 +17,7 @@ aq= StringVar()
 astart = IntVar()
 ahowmuch = StringVar()
 def downloader():
+    l1.delete(0,END)
     allepisodes =0
     epiarray = []
     dict = {}
@@ -29,7 +30,11 @@ def downloader():
     if start < 10:
         start = f"0{start}"
     #---FindId-----
-    x = findid(name.get())
+    try :
+        x = findid(name.get())
+    except:
+        print("Can't find this anime please try again")
+        exit()
     while sourcecode!= "b'DONE'":
         allepisodes = 0
         download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(n))
@@ -50,7 +55,8 @@ def downloader():
     while howmuch > 0:
         try:
             download = dict[str(start)]
-            print(f"Downloading episode number {start}")
+            #print(f"Downloading episode number {start}")
+            l1.insert(END, f"Downloading episode number {start}")
             start = int(start)+1
             if int(start) < 10:
                 start = f"0{start}"
@@ -60,7 +66,8 @@ def downloader():
             diclist = list(dict.values())
             dicnumberlist = list(dict.keys())
             download = diclist[-int(start)]
-            print(f"Downloading episode number {dicnumberlist[-int(start)]}")
+            #print(f"Downloading episode number {dicnumberlist[-int(start)]}")
+            l1.insert(END, f"Downloading episode number {dicnumberlist[-int(start)]}")
             start = int(start)+1
             if int(start) < 10:
                 start = f"0{start}"
@@ -73,14 +80,16 @@ def downloader():
     del q
     del howmuch
     del start
-t1 = Label(window,text = "Anime's name").pack()
-e1=Entry(window,textvariable=name).pack()
-t2 = Label(window,text = "Episode to start at").pack()
-e2=Entry(window,textvariable=astart).pack()
-t3 = Label(window,text = "No. of episodes to download").pack()
-e2=Entry(window,textvariable=ahowmuch).pack()
-R1 = Radiobutton(window, text="1080p", variable=aq, value="1080p").pack()
-R2 = Radiobutton(window, text="720p", variable=aq, value="720p").pack()
-R3 = Radiobutton(window, text="480p", variable=aq, value="480p").pack()
-b1 = Button(window, text = "Start download",command=downloader).pack()
+t1 = Label(window,text = "Anime's name").grid(row= 1, column=1  )
+e1=Entry(window,textvariable=name).grid(row=1 , column=2  )
+t2 = Label(window,text = "Episode to start at").grid(row= 2, column= 1 )
+e2=Entry(window,textvariable=astart).grid(row= 2, column= 2 )
+t3 = Label(window,text = "No. of episodes to download").grid(row=3 , column= 1 )
+e2=Entry(window,textvariable=ahowmuch).grid(row= 3, column= 2 )
+R1 = Radiobutton(window, text="1080p", variable=aq, value="1080p").grid(row=5 , column=2, sticky = N)
+R2 = Radiobutton(window, text="720p", variable=aq, value="720p").grid(row=5 , column=2)
+R3 = Radiobutton(window, text="480p", variable=aq, value="480p").grid(row=5 , column=2, sticky = S )
+l1 = Listbox(window, width = 50)
+l1.grid(row=5 , column=1  )
+b1 = Button(window, text = "Start download",command=downloader).grid(row=6 , column=1  )
 window.mainloop()
