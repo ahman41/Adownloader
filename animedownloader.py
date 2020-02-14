@@ -1,12 +1,17 @@
 import requests, os, sys
 from tkinter import *
+from tkinter import messagebox
 from findid import findid
 from bs4 import BeautifulSoup
 from qbittorrent import Client
 window = Tk()
 window.title("Anime downloader")
-qb = Client('http://127.0.0.1:8080/')
-qb.login('admin', 'adminadmin')
+try:
+    qb = Client('http://127.0.0.1:8080/')
+    qb.login('admin', 'adminadmin')
+except:
+    messagebox.showerror("Error happened!", "couldn't connect to qbitorrent do you have it installed and launched with the web ui ?")
+    exit()
 allepisodes =0
 epiarray = []
 dict = {}
@@ -29,13 +34,13 @@ def downloader():
     sourcecode="start"
     if start < 10:
         start = f"0{start}"
+    if int(start) == 0:
+        start = "01"
     #---FindId-----
-    try :
-        x = findid(name.get())
-    except:
-        print("Can't find this anime please try again")
-        exit()
+    x = findid(name.get())
     while sourcecode!= "b'DONE'":
+        if x == 0:
+            return
         allepisodes = 0
         download=requests.get("https://horriblesubs.info/api.php?method=getshows&type=show&showid="+x[1]+"&nextid="+str(n))
         sourcecode= str(download.content)

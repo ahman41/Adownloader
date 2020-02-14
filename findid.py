@@ -2,6 +2,7 @@ def findid(name):
     import requests
     from bs4 import BeautifulSoup
     n=0
+    from tkinter import messagebox
     num = 0
     name = name.split(" ")
     while n < len(name):
@@ -15,7 +16,11 @@ def findid(name):
     content = request.content
     soup= BeautifulSoup(content,features="lxml")
     link= soup.find_all('script')
-    x = link[num].get_text()
+    try:
+        x = link[num].get_text()
+    except:
+        messagebox.showerror("Error happened!", "Couldn't find this anime are you sure of the name ?")
+        exit()
     while True:
         if "var hs_showid" in x:
             x = x.split("=")
@@ -26,4 +31,8 @@ def findid(name):
                 num = num+1
                 x =link[num].get_text()
             except:
-                print(x)
+                messagebox.showerror("Error happened!", "Couldn't find this anime are you sure of the name ?")
+                x = 0
+                return x
+                break
+                
