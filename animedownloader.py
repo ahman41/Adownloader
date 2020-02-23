@@ -53,18 +53,20 @@ def downloader():
             dwlink = quality[allepisodes].find('a').get('href')
             dict.update({epinumber[allepisodes].get("id"): dwlink})
             allepisodes = allepisodes+1
+        print(dict.keys())
     #download only that amount of episodes
-    if howmuch == 0:
+    if howmuch == 0 and start=="01":
         howmuch = len(dict)
         start = list(dict.keys())[howmuch-1]
+    elif howmuch==0:
+        howmuch = len(dict)-int(start)+1
+
     while howmuch > 0:
         try:
             download = dict[str(start)]
             #print(f"Downloading episode number {start}")
             l1.insert(END, f"Downloading episode number {start}")
             start = int(start)+1
-            if int(start) < 10:
-                start = f"0{start}"
             howmuch = howmuch-1
             qb.download_from_link(download)
         except KeyError:
